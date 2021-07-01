@@ -1,0 +1,73 @@
+// The anatomy of a cloud template
+
+//  Format version -- The latest template format version is 2010-09-09 (as of june 2020), and this is currently the only valid value.
+// Description -- This is what your template talks about
+// Parameters -- They are used to customize a template with values e.g domain name, db password etc
+// Resources -- This is the smallest block you can describe e.g virtual servers, ELB, IP address
+// Outputs -- This is like a parameter but it returns something from your template like an public address or your EC2 server
+
+// Note: ALways specify your format version
+
+// creating a cloudFormation template for EC2
+
+{
+"AWSTemplateFormatVersion": "2010-09-09",
+"Description": "CloudFormation Templates",
+"Parameters": {
+"KeyName": {
+    "Description": "Key Pair name",
+    "Type": "AWS::EC2::KeyPair::KeyName",
+    "Default": "myMewkeys"
+},
+"VPC": {
+    "Description":"Just select one and the only default VPC(Virtual Private Cloud)",
+    "Type":"AWS::EC2::VPC::ID"
+},
+"Subnet": {
+    "Description":"Just select one of the availabe subnet",
+    "Type":"AWS::EC2::Subnet::ID"
+},
+
+"InstanceType": {
+    "Description": "Select one of the possible instance types",
+    "Type": "String",
+    "Default": "t2.micro",
+    "AllowedValues": ["t2.micro", "t2.small", "t2.medium"]
+}
+},
+
+"Resources": {
+"SecurityGroup": {
+    "Type": "AWS::EC2::SecurityGroup",
+    "Properties": {
+        "GroupDescription":"My security group",
+        "VpcId":{"Ref":"VPC"},
+        "SecurityGroupIngress":[
+            {"CidIp":"0.0.0.0/0",
+                "FromPort":22,
+                "IpProtocol":"tcp",
+                "ToProtocol":22
+            }
+        ]
+        
+    }
+},
+
+"Server": {
+    "Type": "AWS::EC2::Instance",
+    "Properties": {
+    "ImageId": "ami-1ecae776",
+    "InstanceType": {"Ref": "InstanceType"},
+    "KeyName": {"Ref": "KeyName"},
+    "SecurityGroupIds": [{"Ref": "SecurityGroup"}],
+    "SubnetId": {"Ref": "Subnet"}
+}
+}
+},
+"Outputs": {
+    "PublicName": {
+    "Value": {"Fn::GetAtt": ["Server", "PublicDnsName"]},
+    "Description": "Public name (connect via SSH as user ec2-user)"
+    }
+    }
+}
